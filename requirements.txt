@@ -1,0 +1,4 @@
+mplfinance==0.12.9b5
+pandas==1.5.2
+ta==0.10.2
+tinkoff==0.1.1
