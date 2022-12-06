@@ -2,6 +2,7 @@ import mplfinance as mpf
 from ta import trend
 from src.utils import get_candles_df
 
+
 def run():
     df = get_candles_df()
     ma8 = mpf.make_addplot(trend.sma_indicator(df['close'], window=8))
