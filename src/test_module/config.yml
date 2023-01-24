@@ -1,0 +1,20 @@
+PULSE:
+  PREFIX_URL: "https://www.tinkoff.ru/api/invest-gw/social/post/feed/v1/post/instrument/"
+  POSTFIX_URL: ''
+  HEADERS:
+    Content-Type: "application/json"
+  PARAMS:
+    appName: "invest"
+    origin: "web"
+    platform: "web"
+
+FORECAST:
+  PREFIX_URL: "https://www.tinkoff.ru/api/invest/smartfeed-public/v1/feed/api/instruments/"
+  POSTFIX_URL: '/forecasts'
+  HEADERS:
+    Content-Type: "application/json"
+  PARAMS:
+    appName: "web"
+    origin: "web"
+    id_kind: "ticker"
+  

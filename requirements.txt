@@ -1,4 +1,10 @@
+fake_useragent==1.1.1
 mplfinance==0.12.9b5
+newsapi==0.1.1
+newsapi_python==0.2.6
 pandas==1.5.2
+PyYAML==6.0
+requests==2.25.1
+scikit_learn==1.2.1
 ta==0.10.2
 tinkoff==0.1.1
