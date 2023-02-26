@@ -28,12 +28,14 @@ class Loader:
         return df
 
     def _create_df(self, candles: list[HistoricCandle]) -> pd.DataFrame:
-        df = pd.DataFrame([{'time': candle.time,
-                            'volume': candle.volume,
-                            'open': convert_to_money(candle.open),
-                            'close': convert_to_money(candle.close),
-                            'high': convert_to_money(candle.high),
-                            'low': convert_to_money(candle.low)} for candle in candles])
-        df.index = pd.DatetimeIndex(df['time'])
-        df = df.drop('time', axis=1)
+        df = pd.DataFrame([{'Time': candle.time.replace(tzinfo=None),
+                            'Volume': candle.volume,
+                            'Open': convert_to_money(candle.open),
+                            'Close': convert_to_money(candle.close),
+                            'High': convert_to_money(candle.high),
+                            'Low': convert_to_money(candle.low)} for candle in candles])
+        df.index = pd.DatetimeIndex(df['Time'])
+    
+        # df = df.drop('ds', axis=1)
+        
         return df
