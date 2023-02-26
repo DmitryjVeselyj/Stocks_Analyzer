@@ -17,9 +17,9 @@ TOKEN = getenv('INVEST_TOKEN', 'Токена нет')
 
 def run():
     time_offset = 14
-    # df = Loader(TOKEN).get_candles_df("TSLA", now() - dt.timedelta(days=300), CandleInterval.CANDLE_INTERVAL_HOUR)
-    # df.to_csv("TSLA_HOUR.csv")
-    df = pd.read_csv('stocks_data/AAPL_HOUR.csv')
+    df = Loader(TOKEN).get_candles_df("AAPL", now() - dt.timedelta(days=300), CandleInterval.CANDLE_INTERVAL_DAY)
+    df.to_csv("AAPL_DAY.csv")
+    # df = pd.read_csv('stocks_data/AAPL_HOUR.csv')
 
     df = df['Close'].values
     df = df.reshape(-1, 1)

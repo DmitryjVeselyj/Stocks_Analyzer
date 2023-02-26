@@ -34,8 +34,8 @@ class Loader:
                             'Close': convert_to_money(candle.close),
                             'High': convert_to_money(candle.high),
                             'Low': convert_to_money(candle.low)} for candle in candles])
-        df.index = pd.DatetimeIndex(df['Time'])
+        # df.index = pd.DatetimeIndex(df['Time'])
     
-        # df = df.drop('ds', axis=1)
+        # df = df.drop('Time', axis=1)
         
         return df
