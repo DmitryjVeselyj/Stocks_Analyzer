@@ -10,6 +10,7 @@ from sklearn.preprocessing import MinMaxScaler
 from keras.models import load_model
 from src.neural_network.model import create_model
 from src.neural_network.dataset_creation import create_dataset
+from statsmodels.tsa.arima.model import ARIMA
 import pandas_ta as ta
 
 TOKEN = getenv('INVEST_TOKEN', 'Токена нет')
@@ -23,26 +24,36 @@ def run():
     # df = Loader(TOKEN).get_candles_df("AAPL", now() - dt.timedelta(days=700), CandleInterval.CANDLE_INTERVAL_DAY)
     # df.to_csv("AAPL_DAY.csv")
     df = pd.read_csv('stocks_data/TSLA_HOUR.csv')
-    sti = ta.supertrend(df['High'], df['Low'], df['Close'], length=10, multiplier=3)['SUPERTd_10_3.0']
+    df = df['Close'].values
+    df = df.reshape(-1, 1)
+    dataset_train = np.array(df[:int(df.shape[0]*0.8)])
+    dataset_test = np.array(df[int(df.shape[0]*0.8):])
     
-    fig, ax = plt.subplots()
-    m = []
-    c = []
-    for i in range(1, len(sti)):
-        if sti[i-1] == -1 and sti[i] == 1:
-            c.append('green')
-            m.append('^')
-        elif sti[i-1] == 1 and sti[i] == -1:
-            c.append('red')
-            m.append('v')
-        else:
-            c.append('tab:blue')
-            m.append('')
-    ax.plot(range(df.shape[0]), df['Close'])
-    print(len(m), df.shape[0])        
-    for i in range(1, df.shape[0]):
-       ax.scatter(range(df.shape[0])[i], df['Close'][i], marker = m[i-1], color = c[i-1])
-    plt.show()
+    model = ARIMA(dataset_train[:-1], order=(4,1,3))
+    fitted = model.fit()
+    prediction = fitted.forecast()
+    print(prediction)
+ 
+    # sti = ta.supertrend(df['High'], df['Low'], df['Close'], length=10, multiplier=3)['SUPERTd_10_3.0']
+    
+    # fig, ax = plt.subplots()
+    # m = []
+    # c = []
+    # for i in range(1, len(sti)):
+    #     if sti[i-1] == -1 and sti[i] == 1:
+    #         c.append('green')
+    #         m.append('^')
+    #     elif sti[i-1] == 1 and sti[i] == -1:
+    #         c.append('red')
+    #         m.append('v')
+    #     else:
+    #         c.append('tab:blue')
+    #         m.append('')
+    # ax.plot(range(df.shape[0]), df['Close'])
+    # print(len(m), df.shape[0])        
+    # for i in range(1, df.shape[0]):
+    #    ax.scatter(range(df.shape[0])[i], df['Close'][i], marker = m[i-1], color = c[i-1])
+    # plt.show()
     
     # df = df['Close'].values
     # df = df.reshape(-1, 1)
