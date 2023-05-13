@@ -15,6 +15,7 @@ from sklearn.metrics import mean_squared_error
 from scipy.signal import lfilter
 from keras.callbacks import History 
 history = History()
+from statsmodels.graphics.tsaplots import plot_acf
 TOKEN = getenv('INVEST_TOKEN', 'Токена нет')
 
 
@@ -48,10 +49,11 @@ def another_run():
 
 
 def run():
-    time_offset = 14
     
-    df_begin = Loader(TOKEN).get_candles_df("MSFT", now() - dt.timedelta(days=300), CandleInterval.CANDLE_INTERVAL_DAY)
-
+    
+    df_begin = Loader(TOKEN).get_candles_df("TSLA", now() - dt.timedelta(days=365), CandleInterval.CANDLE_INTERVAL_DAY)
+    time_offset = 14
+    # print(time_offset)
     n = 15  # the larger n is, the smoother curve will be
     b = [1.0 / n] * n
     a = 1
@@ -63,58 +65,68 @@ def run():
    
     
     df = df_begin['Close'].values
-    df = lfilter(b, a, df)
+    
+    # df = lfilter(b, a, df)
     df = df.reshape(-1, 1)
+
     dataset_train = np.array(df[:int(df.shape[0]*0.8)])
     dataset_test = np.array(df[int(df.shape[0]*0.8):])
 
     scaler = MinMaxScaler(feature_range=(0,1))
   
     dataset_train = scaler.fit_transform(dataset_train)
-
+    pd.plotting.autocorrelation_plot(dataset_train)
+    plt.show()
     dataset_test = scaler.transform(dataset_test)
     x_train, y_train = create_dataset(dataset_train, time_offset)
     x_test, y_test = create_dataset(dataset_test, time_offset)
     x_train = np.reshape(x_train, (x_train.shape[0], x_train.shape[1], 1))
     x_test = np.reshape(x_test, (x_test.shape[0], x_test.shape[1], 1))
    
-    model = create_model(x_train.shape[1])
-    model.fit(x_train, y_train, validation_split = 0.3, epochs=100, batch_size=32, callbacks=[history], metrics = ['accuracy'])
-    plt.plot(history.history['loss'])
-    plt.show()
-
-    plt.plot(history.history['val_loss'])
-    plt.show()
+    # model = create_model(x_train.shape[1])
+    # model.fit(x_train, y_train, validation_split = 0.3, epochs=100, batch_size=32, callbacks=[history])
     # model.save('stock_prediction.h5') 
 
-    # model = load_model("src/neural_network/stock_prediction.h5")
-   
-    predictions = model.predict(x_test)
+    model = load_model("src/neural_network/stock_prediction.h5")
     
+    val = 10
+    print(dataset_test)
+    dataset_test = dataset_test[:len(y_test) - val]
+    
+    predictions = []
+    another_pred = []
+    for i in range(val):
+        x_test, _ = create_dataset(dataset_test, time_offset)
+        pred = model.predict(x_test)[-1]
+       
+        predictions.append(pred)
+        dataset_test = list(dataset_test)
+        dataset_test.append(pred)
+        dataset_test = np.array(dataset_test)
+    
+        
+    print(dataset_test)
+    # predictions = model.predict(x_test)
+ 
     predictions = scaler.inverse_transform(predictions)
-    train_predictions = scaler.inverse_transform(model.predict(x_train))
-    y_train_scaled = scaler.inverse_transform(y_train.reshape(-1, 1)) 
+    y_train_scaled = scaler.inverse_transform(y_train.reshape(-1, 1))
+    print(len(dataset_test)) 
+    print(len(x_test))
+    x_test_scaled = scaler.inverse_transform(x_test.reshape(-1, 1))
+    print(len(y_test))
     y_test_scaled = scaler.inverse_transform(y_test.reshape(-1, 1))
-    MSE_error = mean_squared_error(y_test_scaled, predictions)
-    print('Testing Mean Squared Error is {}'.format(MSE_error))
+    # MSE_error = mean_squared_error(y_test_scaled, predictions)
+    # print('Testing Mean Squared Error is {}'.format(MSE_error))
 
 
     fig, ax = plt.subplots(figsize=(16,8))
     ax.set_facecolor('black')
 
     ax.plot(y_test_scaled, color='tab:blue', label='Original price')
-    ax.plot(predictions, color='tab:green', label='Predicted price')
+    ax.plot(range(len(y_test) - val, len(y_test)), predictions, color='tab:green', label='Predicted price')
     plt.legend()
     plt.show()
     
-
-    fig, ax = plt.subplots(figsize=(16,8))
-    ax.set_facecolor('black')
-
-    ax.plot(y_train_scaled, color='tab:blue', label='Original price')
-    ax.plot(train_predictions, color='tab:green', label='Predicted price')
-    plt.legend()
-    plt.show()
     
 
 
